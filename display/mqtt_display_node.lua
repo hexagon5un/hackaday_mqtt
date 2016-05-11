@@ -1,8 +1,10 @@
-mqtt_address     = "192.168.1.49"
-temp_topic       = "home/outdoors/temperature"
-humid_topic      = "home/outdoors/humidity"
-status_topic     = "home/outdoors/status"
-ws2812b_pin      = 4  -- Pin D4 on my setup
+mqtt_address = "192.168.1.49"
+temp_topic   = "home/outdoors/temperature"
+humid_topic  = "home/outdoors/humidity"
+status_topic = "home/outdoors/status"
+ws2812b_pin  = 4  -- Pin D4 on my setup
+status       = "on"
+temp         = 20
 
 -- Set up named client with 60 sec keepalive, 
 -- no username/password, 
@@ -29,8 +31,16 @@ m:on("message", function(client, topic, data) handle_message(client, topic, data
 -- Print out all data & display temperature data 
 function handle_message(client, topic, data) 
 	print(topic .. ": " .. data)
-	if topic == temp_topic then
-		display_temp(data)
+	if topic == status_topic then
+		status = data
+	elseif topic == temp_topic then
+		temp = data
+	end
+	-- and display
+	if status == "on" then
+		display_temp(temp)
+	else
+		display_off()
 	end
 end
 
@@ -40,7 +50,13 @@ function display_temp(data)
 	r = math.min(2*math.max(data-20, 0), 40)
 	b = math.max(40-2*data, 0)
 	g = 20 - math.min(math.abs(20 - data), 20)
-	ws2812.writergb(ws2812b_pin, string.char(r, g, b))
+	if status == "on" then
+		ws2812.writergb(ws2812b_pin, string.char(r, g, b))
+	end
+end
+
+function display_off()
+	ws2812.writergb(ws2812b_pin, string.char(0, 0, 0))
 end
 
 m:connect(mqtt_address, 1883, 0, 1) 
