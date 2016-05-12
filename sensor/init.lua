@@ -29,5 +29,5 @@ end
 )
 
 -- cancel init just in case it's porked
-file.remove("init.lua")
+-- file.remove("init.lua")
 
