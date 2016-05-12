@@ -2,12 +2,15 @@ LUAFILES:= init.lua mqtt_display_node.lua
 
 PORT=/dev/ttyUSB0
 BAUD=9600
-#BAUD=115200
+
+all: flash restart term
 
 flash: $(LUAFILES) 
 	nodemcu-uploader -p $(PORT) -b $(BAUD) upload $^
-	sleep 1
+
+restart:
 	echo "node.restart()" | cat > $(PORT)
-	sleep 1
+
+term:
 	pyterm $(PORT) $(BAUD)
 
