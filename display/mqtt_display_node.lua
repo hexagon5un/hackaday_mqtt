@@ -37,7 +37,7 @@ function handle_message(client, topic, data)
 		temp = data
 	end
 	-- and display
-	if status == "on" then
+	if status == "on" or status == "o" then
 		display_temp(temp)
 	else
 		display_off()
@@ -50,9 +50,7 @@ function display_temp(data)
 	r = math.min(2*math.max(data-20, 0), 40)
 	b = math.max(40-2*data, 0)
 	g = 20 - math.min(math.abs(20 - data), 20)
-	if status == "on" then
-		ws2812.writergb(ws2812b_pin, string.char(r, g, b))
-	end
+	ws2812.writergb(ws2812b_pin, string.char(r, g, b))
 end
 
 function display_off()
