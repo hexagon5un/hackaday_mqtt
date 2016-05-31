@@ -11,9 +11,9 @@ m = mqtt.Client(client_id, 60, "", "", 1)
 
 -- subscribe as soon as connected
 m:on("connect", function() 
-	print("mqtt connected") 
 	m:subscribe(memento_topic, 0)
 	m:subscribe(command_topic, 0)
+	send_status("back online")
 end )
 
 -- Deal with incoming messages
@@ -35,17 +35,22 @@ end
 -- Respond to commands on command topic
 function handle_message(client, topic, data) 
 
-	if topic == memento_topic and boot_state == nil then 
-		-- setting boot state here prevents it from reading again
-		boot_state = data
-		send_memento("reset")
-		send_status("boot state was: " .. boot_state)
+	if topic == memento_topic then
+		if boot_state == nil then 
+			-- prevent from reading twice 
+			boot_state = data
+			send_status("boot state: " .. boot_state)
+			-- if reset by hardware or power, should say reset
+			send_memento("hard reset or fault")
+		end
 
 	elseif topic == command_topic then
 		if data == "sleep" then
 			go_to_sleep()
 		elseif data == "restart" then
-			node.restart()
+			send_status("restarting...")
+			send_memento("command restart")
+			tmr.alarm(2, 1000, tmr.ALARM_SINGLE, node.restart)
 		elseif data == "ping" then
 			send_status("pong")
 		end
