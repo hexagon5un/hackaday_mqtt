@@ -34,23 +34,24 @@ end
 -- Retrieve / set wakeup status from memento topic
 -- Respond to commands on command topic
 function handle_message(client, topic, data) 
-	if topic == memento_topic then 
-		if boot_state == nil then
-			if data == "bootup" then 
-				boot_state = "reset"
-			elseif data == "sleep" then
-				boot_state = "sleep"
-			end
-			send_memento("bootup")
-			send_status("boot state: " .. boot_state)
-		end
+
+	if topic == memento_topic and boot_state == nil then 
+		-- setting boot state here prevents it from reading again
+		boot_state = data
+		send_memento("reset")
+		send_status("boot state was: " .. boot_state)
+
 	elseif topic == command_topic then
 		if data == "sleep" then
 			go_to_sleep()
 		elseif data == "restart" then
 			node.restart()
+		elseif data == "ping" then
+			send_status("pong")
 		end
+
 	else
+		-- default, for debugging over serial if desperate
 		print(topic .. ": " .. data)
 	end
 end
